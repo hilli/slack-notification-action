@@ -1,0 +1,38 @@
+name: Slack Notification
+description: Send a Slack notification
+inputs:
+  message:
+    description: The message to send
+    required: true
+  channel:
+    description: The channel to send the message to
+    required: true
+  slack-bot-token:
+    description: The Slack bot token
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Find channel ID from channel name
+      id: slack-channel-id
+      shell: bash
+      env:
+        SLACK_TOKEN: ${{ inputs.slack-bot-token }}
+        CHANNEL_NAME: ${{ inputs.channel }}
+      run: |
+        CHANNEL_ID=$(curl -s "https://slack.com/api/conversations.list?token=${SLACK_TOKEN}&types=public_channel,private_channel" | jq -r --arg CHANNEL_NAME "$CHANNEL_NAME" '.channels[] | select(.name == $CHANNEL_NAME) | .id')
+        echo "CHANNEL_ID=$CHANNEL_ID" >> $GITHUB_OUTPUT
+    - name: Send Slack notification
+      id: send-slack-notification
+      shell: bash
+      env:
+        MESSAGE: ${{ inputs.message }}
+        SLACK_TOKEN: ${{ inputs.slack-bot-token }}
+        CHANNEL_ID: ${{ steps.slack-channel-id.outputs.CHANNEL_ID }}
+      run: |
+        curl -X POST \
+          --url "https://slack.com/api/chat.postMessage" \
+          --data "{\"channel\":\"$CHANNEL_ID\",\"text\":\"$MESSAGE\"}" \
+          --header "Authorization: Bearer ${SLACK_TOKEN}" \
+          --header "Content-Type: application/json; charset=utf-8"
