@@ -22,7 +22,7 @@ runs:
         SLACK_BOT_TOKEN: ${{ inputs.slack-bot-token }}
         SLACK_CHANNEL_ID: ${{ inputs.slack-channel-id }}
       run: |
-        curl -X POST \
+        curl -s -X POST \
           --url "https://slack.com/api/chat.postMessage" \
           --data "{\"channel\":\"$SLACK_CHANNEL_ID\",\"text\":\"$MESSAGE\"}" \
           --header "Authorization: Bearer ${SLACK_BOT_TOKEN}" \
