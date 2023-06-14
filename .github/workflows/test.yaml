@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Test Action
-        uses: .
+        uses: hilli/slack-notification-action@main
         with:
           message: "Hello World"
           channel: "ops"
